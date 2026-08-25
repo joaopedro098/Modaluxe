@@ -1,201 +1,58 @@
 import Image from "next/image"
 import Link from "next/link"
-import { ShoppingBag, Heart, Search, Menu, ArrowRight, ShieldCheck, Truck, RefreshCw, Trash2, Plus, Minus } from "lucide-react"
+import { Heart, ArrowRight, ShieldCheck, Truck, RefreshCw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { 
-  Sheet, 
-  SheetTrigger, 
-  SheetContent, 
-  SheetHeader, 
-  SheetTitle, 
-  SheetDescription, 
-  SheetFooter 
-} from "@/components/ui/sheet"
-import { Separator } from "@/components/ui/separator"
 
 export default function Home() {
-  // Exemplo de produtos para a vitrine
+  // Produtos com imagens individuais (apenas com imagens válidas onde você deseja)
   const products = [
     {
       id: 1,
       name: "Camiseta Oversized Minimal",
       price: "R$ 149,90",
-      image: "",
+      image: "", // Sem imagem por enquanto
       tag: "Lançamento",
     },
     {
       id: 2,
       name: "Jaqueta Jeans Vintage",
       price: "R$ 329,90",
-      image: "",
+      image: "", // Sem imagem por enquanto
       tag: "Mais Vendido",
     },
     {
       id: 3,
       name: "Calça Alfaiataria Comfort",
       price: "R$ 219,90",
-      image: "",
+      image: "", // Sem imagem por enquanto
       tag: "-20%",
     },
     {
       id: 4,
       name: "Vestido Midi Floral",
       price: "R$ 279,90",
-      image: "",
+      image: "", // Sem imagem por enquanto
       tag: "Tendência",
     },
   ]
 
+  // Apenas a categoria "Masculino" possui a foto. As outras estão com string vazia ("").
   const categories = [
-    { name: "Feminino", image: "" },
-    { name: "Masculino", image: "" },
-    { name: "Acessórios", image: "" },
+    { name: "Feminino", image: "/feminino.webp" },
+    { name: "Masculino", image: "/masculino.webp" },
+    { name: "Acessórios", image: "/acessorio.avif" },
   ]
-
-  // Itens simulados no carrinho
-  const cartItems = [
-    {
-      id: 1,
-      name: "Camiseta Oversized Minimal",
-      price: 149.90,
-      size: "M",
-      quantity: 1,
-      image: "",
-    },
-    {
-      id: 3,
-      name: "Calça Alfaiataria Comfort",
-      price: 219.90,
-      size: "38",
-      quantity: 1,
-      image: "",
-    }
-  ]
-
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      {/* 1. Top Bar */}
-      <div className="bg-primary text-primary-content py-2 text-center text-xs font-medium tracking-wide">
+      {/* Top Bar com texto branco */}
+      <div className="bg-primary text-white py-2 text-center text-xs font-medium tracking-wide">
         Frete grátis para todo o Brasil em compras acima de R$ 250 | Use o cupom <span className="underline font-bold">PRIMEIRACOMPRA</span>
       </div>
-
-      {/* 2. Navbar */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-6">
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
-            <Link href="/" className="text-xl font-bold tracking-tighter">
-              MODA<span className="text-primary">LUXE</span>
-            </Link>
-            <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-              <Link href="#" className="transition-colors hover:text-primary">Feminino</Link>
-              <Link href="#" className="transition-colors hover:text-primary">Masculino</Link>
-              <Link href="#" className="transition-colors hover:text-primary">Coleção 2026</Link>
-              <Link href="#" className="transition-colors hover:text-primary text-muted-foreground">Sale</Link>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="hidden lg:flex relative w-64">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input type="search" placeholder="Buscar produtos..." className="pl-8 h-9 text-sm" />
-            </div>
-            <Button variant="ghost" size="icon">
-              <Heart className="h-5 w-5" />
-            </Button>
-
-            {/* BARRA LATERAL DO CARRINHO (SHEET) */}
-            <Sheet>
-              <SheetTrigger >
-                <Button variant="ghost" size="icon" className="relative cursor-pointer">
-                  <ShoppingBag className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                    {cartItems.length}
-                  </span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="flex flex-col w-full sm:max-w-md">
-                <SheetHeader>
-                  <SheetTitle>Seu Carrinho ({cartItems.length})</SheetTitle>
-                  <SheetDescription>
-                    Revise seus itens selecionados antes de finalizar a compra.
-                  </SheetDescription>
-                </SheetHeader>
-
-                {/* Lista de Produtos do Carrinho */}
-                <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-1">
-                  {cartItems.length > 0 ? (
-                    cartItems.map((item) => (
-                      <div key={item.id} className="flex gap-4 items-center justify-between border-b pb-4">
-                        <div className="relative h-16 w-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                          <Image src={item.image} alt={item.name} fill className="object-cover" />
-                        </div>
-                        <div className="flex-1 space-y-1">
-                          <h4 className="text-sm font-medium line-clamp-1">{item.name}</h4>
-                          <p className="text-xs text-muted-foreground">Tam: {item.size}</p>
-                          <div className="flex items-center gap-2 pt-1">
-                            <button className="h-6 w-6 border rounded flex items-center justify-center text-xs hover:bg-muted">
-                              <Minus className="h-3 w-3" />
-                            </button>
-                            <span className="text-xs font-medium">{item.quantity}</span>
-                            <button className="h-6 w-6 border rounded flex items-center justify-center text-xs hover:bg-muted">
-                              <Plus className="h-3 w-3" />
-                            </button>
-                          </div>
-                        </div>
-                        <div className="text-right space-y-1">
-                          <span className="text-sm font-bold">R$ {item.price.toFixed(2)}</span>
-                          <button className="block ml-auto text-muted-foreground hover:text-destructive transition-colors">
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground space-y-2">
-                      <ShoppingBag className="h-10 w-10 stroke-1" />
-                      <p>Seu carrinho está vazio.</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Rodapé do Carrinho com Subtotal e Checkout */}
-                {cartItems.length > 0 && (
-                  <SheetFooter className="flex-col sm:flex-col border-t pt-4 space-y-3">
-                    <div className="w-full space-y-1.5 text-sm">
-                      <div className="flex justify-between text-muted-foreground">
-                        <span>Frete</span>
-                        <span>Calculado no checkout</span>
-                      </div>
-                      <div className="flex justify-between font-bold text-base">
-                        <span>Subtotal</span>
-                        <span>R$ {subtotal.toFixed(2)}</span>
-                      </div>
-                    </div>
-                    <Button className="w-full" size="lg">
-                      Finalizar Compra
-                    </Button>
-                    <SheetTrigger >
-                      <Button variant="outline" className="w-full" size="sm">
-                        Continuar Comprando
-                      </Button>
-                    </SheetTrigger>
-                  </SheetFooter>
-                )}
-              </SheetContent>
-            </Sheet>
-
-          </div>
-        </div>
-      </header>
 
       {/* 3. Hero Section */}
       <section className="relative overflow-hidden bg-muted py-20 lg:py-32">
@@ -219,14 +76,16 @@ export default function Home() {
               </Button>
             </div>
           </div>
-          <div className="relative h-[400px] lg:h-[500px] rounded-2xl overflow-hidden shadow-xl">
+          <div className="relative h-[400px] lg:h-[500px] rounded-2xl overflow-hidden shadow-xl bg-background/50 flex items-center justify-center">
+            {/* Imagem principal do Hero alterada para string vazia ou outra de sua preferência */}
             <Image 
-              src="" 
+              src="/coleção2026.webp" 
               alt="Modelo vestindo roupas da coleção" 
               fill 
               className="object-cover"
               priority
             />
+            <span className="text-xs text-muted-foreground z-0">Espaço para Foto Hero</span>
           </div>
         </div>
       </section>
@@ -239,14 +98,20 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {categories.map((cat, index) => (
-            <div key={index} className="group relative h-80 rounded-xl overflow-hidden shadow-md cursor-pointer">
-              <Image 
-                src={cat.image} 
-                alt={cat.name} 
-                fill 
-                className="object-cover transition-transform duration-500 group-hover:scale-105" 
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-6">
+            <div key={index} className="group relative h-80 rounded-xl overflow-hidden shadow-md cursor-pointer bg-muted flex items-center justify-center">
+              {/* Renderiza a imagem apenas se houver uma string válida no objeto */}
+              {cat.image ? (
+                <Image 
+                  src={cat.image} 
+                  alt={cat.name} 
+                  fill 
+                  className="object-cover transition-transform duration-500 group-hover:scale-105" 
+                />
+              ) : (
+                <span className="text-xs text-muted-foreground">Sem foto ({cat.name})</span>
+              )}
+              
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-6 z-10">
                 <div className="text-white">
                   <h3 className="text-2xl font-bold">{cat.name}</h3>
                   <p className="text-xs text-gray-300 mt-1 flex items-center gap-1 group-hover:underline">
@@ -274,7 +139,7 @@ export default function Home() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {products.map((product) => (
             <Card key={product.id} className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-shadow">
-              <div className="relative h-80 bg-muted overflow-hidden">
+              <div className="relative h-80 bg-muted overflow-hidden flex items-center justify-center">
                 <Badge className="absolute top-3 left-3 z-10 bg-background/80 text-foreground backdrop-blur-sm border-0 font-medium">
                   {product.tag}
                 </Badge>
@@ -285,12 +150,17 @@ export default function Home() {
                 >
                   <Heart className="h-4 w-4" />
                 </Button>
-                <Image 
-                  src={product.image} 
-                  alt={product.name} 
-                  fill 
-                  className="object-cover transition-transform duration-300 group-hover:scale-105" 
-                />
+
+                {product.image ? (
+                  <Image 
+                    src={product.image} 
+                    alt={product.name} 
+                    fill 
+                    className="object-cover transition-transform duration-300 group-hover:scale-105" 
+                  />
+                ) : (
+                  <span className="text-xs text-muted-foreground">Foto do Produto</span>
+                )}
               </div>
               <CardContent className="p-4 space-y-2">
                 <h3 className="font-medium text-sm line-clamp-1">{product.name}</h3>
@@ -359,7 +229,7 @@ export default function Home() {
           <div>
             <h4 className="font-semibold text-sm mb-3">Atendimento</h4>
             <ul className="space-y-2 text-xs text-muted-foreground">
-              <li><Link href="#" className="hover:text-internal">Central de Ajuda</Link></li>
+              <li><Link href="#" className="hover:text-primary">Central de Ajuda</Link></li>
               <li><Link href="#" className="hover:text-primary">Política de Trocas</Link></li>
               <li><Link href="#" className="hover:text-primary">Rastrear Pedido</Link></li>
             </ul>

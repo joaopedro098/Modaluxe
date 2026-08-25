@@ -12,16 +12,49 @@ datasource db {
   provider = "postgresql"
 }
 model User {
-  id    String  @id @default(uuid()) @db.Uuid
-  email String  @unique
-  name  String
-  senha String
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  sessions  Session[] // Um usuário pode ter várias sessões ativas em dispositivos diferentes
+  cart      Cart?
+ 
+  createdAt DateTime  @default(now())
 }
 
+model Cart {
+  id     String     @id @default(uuid())
+  userId String     @unique
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  CartItem[]
+}
+
+model CartItem {
+  id        String @id @default(uuid())
+  cartId    String
+  cart      Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String // ID do produto (pode vir de uma API externa ou tabela própria)
+  quantity  Int    @default(1)
+}
 model Produtos{
    id Int @id @default(autoincrement())
    nome String 
    sizes  String[]
    color String[]
    descrição String @db.Text
+   categoria String[]
+}
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // O token em si (muitas vezes guardamos um hash dele por segurança, mas o valor real vai para o cookie)
+  refreshToken String   @unique 
+  
+  // Metadados úteis para o usuário saber onde está logado
+  userAgent    String?  // Ex: "Chrome no Windows", "Safari no iPhone"
+  ipAddress    String?  // O IP de onde ele logou
+  
+  expiresAt    DateTime // Data de expiração do refresh token
+  createdAt    DateTime @default(now())
 }
