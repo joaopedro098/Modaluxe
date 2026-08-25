@@ -85,10 +85,11 @@ export default function Header() {
             MODA<span className="text-primary">LUXE</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link href="#" className="transition-colors hover:text-primary">Feminino</Link>
-            <Link href="#" className="transition-colors hover:text-primary">Masculino</Link>
-            <Link href="#" className="transition-colors hover:text-primary">Coleção 2026</Link>
-            <Link href="#" className="transition-colors hover:text-primary text-muted-foreground">Sale</Link>
+            <Link href="/src/app/(public)/feminino" className="transition-colors hover:text-primary">Feminino</Link>
+            <Link href="/src/app/(public)/masculino" className="transition-colors hover:text-primary">Masculino</Link>
+            <Link href="/src/app/(public)/coleção2026" className="transition-colors hover:text-primary">Coleção 2026</Link>
+            <Link href="/src/app/(public)/acessorios" className="transition-colors hover:text-primary text-muted-foreground">acessorios</Link>
+            <Link href="/src/app/(public)/login" className="transition-colors hover:text-primary text-muted-foreground">login</Link>
           </nav>
         </div>
 
