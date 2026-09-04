@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Heart, ArrowRight, ShieldCheck, Truck, RefreshCw } from "lucide-react"
 
+
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -49,6 +50,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
+   
       {/* Top Bar com texto branco */}
       <div className="bg-primary text-white py-2 text-center text-xs font-medium tracking-wide">
         Frete grátis para todo o Brasil em compras acima de R$ 250 | Use o cupom <span className="underline font-bold">PRIMEIRACOMPRA</span>

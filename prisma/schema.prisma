@@ -33,6 +33,7 @@ model CartItem {
 }
 model Produtos{
    id Int @id @default(autoincrement())
+   URLImage String 
    nome String 
    sizes  String[]
    color String[]
