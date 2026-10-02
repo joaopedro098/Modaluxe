@@ -104,14 +104,12 @@ export default function Header() {
 
           {/* BARRA LATERAL DO CARRINHO (SHEET) */}
           <Sheet>
-            {/* Usando asChild para que o SheetTrigger repasse as propriedades ao Button sem duplicar tags HTML */}
-            <SheetTrigger >
-              <Button variant="ghost" size="icon" className="relative cursor-pointer">
-                <ShoppingBag className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                  {cartItems.length}
-                </span>
-              </Button>
+            {/* O próprio SheetTrigger funciona como botão sem criar uma tag <button> aninhada */}
+            <SheetTrigger className="relative inline-flex h-9 w-9 items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer">
+              <ShoppingBag className="h-5 w-5" />
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                {cartItems.length}
+              </span>
             </SheetTrigger>
 
             <SheetContent className="flex flex-col w-full sm:max-w-md">

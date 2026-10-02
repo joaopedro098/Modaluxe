@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "./../../../lib/prisma"; // Ajuste o caminho do seu cliente prisma
+import { prisma } from "@/lib/prisma"; // Ajuste o caminho do seu cliente prisma
 
 export async function buscarProdutos(termo: string) {
   try {
