@@ -1,3 +1,5 @@
+"use client";
+
 import { 
   Sheet, 
   SheetTrigger, 
@@ -6,73 +8,16 @@ import {
   SheetTitle, 
   SheetDescription, 
   SheetFooter 
-} from "@/components/ui/sheet"
-import { ShoppingBag, Heart, Search, Menu, Trash2, Plus, Minus } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { Input } from "@/components/ui/input"
-import Image from "next/image"
+} from "@/components/ui/sheet";
+import { ShoppingBag, Heart, Search, Menu, Trash2, Plus, Minus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import Image from "next/image";
+import { useCart } from "@/context/cart-context";
 
 export default function Header() {
-  const products = [
-    {
-      id: 1,
-      name: "Camiseta Oversized Minimal",
-      price: "R$ 149,90",
-      image: "",
-      tag: "Lançamento",
-    },
-    {
-      id: 2,
-      name: "Jaqueta Jeans Vintage",
-      price: "R$ 329,90",
-      image: "",
-      tag: "Mais Vendido",
-    },
-    {
-      id: 3,
-      name: "Calça Alfaiataria Comfort",
-      price: "R$ 219,90",
-      image: "",
-      tag: "-20%",
-    },
-    {
-      id: 4,
-      name: "Vestido Midi Floral",
-      price: "R$ 279,90",
-      image: "",
-      tag: "Tendência",
-    },
-  ]
-
-  const categories = [
-    { name: "Feminino", image: "" },
-    { name: "Masculino", image: "" },
-    { name: "Acessórios", image: "" },
-  ]
-
-  // Itens simulados no carrinho
-  const cartItems = [
-    {
-      id: 1,
-      name: "Camiseta Oversized Minimal",
-      price: 149.90,
-      size: "M",
-      quantity: 1,
-      image: "",
-    },
-    {
-      id: 3,
-      name: "Calça Alfaiataria Comfort",
-      price: 219.90,
-      size: "38",
-      quantity: 1,
-      image: "",
-    }
-  ]
-
-  // Cálculo automático do subtotal
-  const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0)
+  const { cartItems, totalQuantity, subtotal, updateQuantity, removeFromCart } = useCart();
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -85,11 +30,11 @@ export default function Header() {
             MODA<span className="text-primary">LUXE</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link href="/src/app/(public)/feminino" className="transition-colors hover:text-primary">Feminino</Link>
-            <Link href="/src/app/(public)/masculino" className="transition-colors hover:text-primary">Masculino</Link>
-            <Link href="/src/app/(public)/coleção2026" className="transition-colors hover:text-primary">Coleção 2026</Link>
-            <Link href="/src/app/(public)/acessorios" className="transition-colors hover:text-primary text-muted-foreground">acessorios</Link>
-            <Link href="/src/app/(public)/login" className="transition-colors hover:text-primary text-muted-foreground">login</Link>
+            <Link href="/feminino" className="transition-colors hover:text-primary">Feminino</Link>
+            <Link href="/masculino" className="transition-colors hover:text-primary">Masculino</Link>
+            <Link href="/colecao2026" className="transition-colors hover:text-primary">Coleção 2026</Link>
+            <Link href="/acessorios" className="transition-colors hover:text-primary text-muted-foreground">Acessórios</Link>
+            <Link href="/login" className="transition-colors hover:text-primary text-muted-foreground">Login</Link>
           </nav>
         </div>
 
@@ -104,17 +49,16 @@ export default function Header() {
 
           {/* BARRA LATERAL DO CARRINHO (SHEET) */}
           <Sheet>
-            {/* O próprio SheetTrigger funciona como botão sem criar uma tag <button> aninhada */}
             <SheetTrigger className="relative inline-flex h-9 w-9 items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer">
               <ShoppingBag className="h-5 w-5" />
               <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                {cartItems.length}
+                {totalQuantity}
               </span>
             </SheetTrigger>
 
             <SheetContent className="flex flex-col w-full sm:max-w-md">
               <SheetHeader>
-                <SheetTitle>Seu Carrinho ({cartItems.length})</SheetTitle>
+                <SheetTitle>Seu Carrinho ({totalQuantity})</SheetTitle>
                 <SheetDescription>
                   Revise seus itens selecionados antes de finalizar a compra.
                 </SheetDescription>
@@ -124,7 +68,7 @@ export default function Header() {
               <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-1">
                 {cartItems.length > 0 ? (
                   cartItems.map((item) => (
-                    <div key={item.id} className="flex gap-4 items-center justify-between border-b pb-4">
+                    <div key={`${item.id}-${item.size}`} className="flex gap-4 items-center justify-between border-b pb-4">
                       <div className="relative h-16 w-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
                         {item.image ? (
                           <Image src={item.image} alt={item.name} fill className="object-cover" />
@@ -136,18 +80,35 @@ export default function Header() {
                         <h4 className="text-sm font-medium line-clamp-1">{item.name}</h4>
                         <p className="text-xs text-muted-foreground">Tam: {item.size}</p>
                         <div className="flex items-center gap-2 pt-1">
-                          <button type="button" className="h-6 w-6 border rounded flex items-center justify-center text-xs hover:bg-muted">
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}
+                            className="h-6 w-6 border rounded flex items-center justify-center text-xs hover:bg-muted"
+                          >
                             <Minus className="h-3 w-3" />
                           </button>
                           <span className="text-xs font-medium">{item.quantity}</span>
-                          <button type="button" className="h-6 w-6 border rounded flex items-center justify-center text-xs hover:bg-muted">
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
+                            className="h-6 w-6 border rounded flex items-center justify-center text-xs hover:bg-muted"
+                          >
                             <Plus className="h-3 w-3" />
                           </button>
                         </div>
                       </div>
                       <div className="text-right space-y-1">
-                        <span className="text-sm font-bold">R$ {item.price.toFixed(2)}</span>
-                        <button type="button" className="block ml-auto text-muted-foreground hover:text-destructive transition-colors">
+                        <span className="text-sm font-bold">
+                          {new Intl.NumberFormat("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                          }).format(item.price * item.quantity)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(item.id, item.size)}
+                          className="block ml-auto text-muted-foreground hover:text-destructive transition-colors"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -171,7 +132,12 @@ export default function Header() {
                     </div>
                     <div className="flex justify-between font-bold text-base">
                       <span>Subtotal</span>
-                      <span>R$ {subtotal.toFixed(2)}</span>
+                      <span>
+                        {new Intl.NumberFormat("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        }).format(subtotal)}
+                      </span>
                     </div>
                   </div>
                   <Button className="w-full" size="lg">
@@ -181,9 +147,8 @@ export default function Header() {
               )}
             </SheetContent>
           </Sheet>
-
         </div>
       </div>
-    </header> 
-  )
+    </header>
+  );
 }

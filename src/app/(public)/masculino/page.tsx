@@ -1,5 +1,7 @@
 "use client";
 
+import { BuyButton } from "@/components/ui/buy-button"; 
+import { CartButton } from "@/components/ui/cart-button"; // 1. Import do seu CartButton
 import { Masculino } from "@/(produtos)/Masculino/index";
 import { size, Produto } from "@/lib/types";
 import { useState } from "react";
@@ -32,55 +34,74 @@ export default function ListaProdutos() {
               padding: "16px",
               width: "250px",
               textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
             }}
           >
-            <div style={{ position: "relative", width: "100%", height: "200px" }}>
-              <Image
-                src={produto.url}
-                alt={produto.name}
-                fill
-                sizes="(max-width: 768px) 100vw, 250px"
-                style={{ objectFit: "cover", borderRadius: "4px" }}
-              />
-            </div>
-
-            <h3 style={{ marginTop: "12px", marginBottom: "8px" }}>{produto.name}</h3>
-            <p style={{ color: "#666", fontSize: "14px", marginBottom: "8px" }}>{produto.description}</p>
-            
-            <strong>
-              {new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(produto.value)}
-            </strong>
-
-            <div style={{ marginTop: "12px" }}>
-              <p style={{ margin: "4px 0 8px 0", fontSize: "14px", fontWeight: 500 }}>
-                Tamanhos disponíveis:
-              </p>
-              <div style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
-                {produto.size.map((tamanho: size) => {
-                  const isSelected = tamanhoAtual === tamanho;
-
-                  return (
-                    <Button
-                      key={tamanho}
-                      variant={isSelected ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => selecionarTamanho(index, tamanho)}
-                    >
-                      {tamanho}
-                    </Button>
-                  );
-                })}
+            <div>
+              <div style={{ position: "relative", width: "100%", height: "200px" }}>
+                <Image
+                  src={produto.url}
+                  alt={produto.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 250px"
+                  style={{ objectFit: "cover", borderRadius: "4px" }}
+                />
               </div>
+
+              <h3 style={{ marginTop: "12px", marginBottom: "8px" }}>{produto.name}</h3>
+              <p style={{ color: "#666", fontSize: "14px", marginBottom: "8px" }}>{produto.description}</p>
+              
+              <strong>
+                {new Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(produto.value)}
+              </strong>
+
+              <div style={{ marginTop: "12px" }}>
+                <p style={{ margin: "4px 0 8px 0", fontSize: "14px", fontWeight: 500 }}>
+                  Tamanhos disponíveis:
+                </p>
+                <div style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
+                  {produto.size.map((tamanho: size) => {
+                    const isSelected = tamanhoAtual === tamanho;
+
+                    return (
+                      <Button
+                        key={tamanho}
+                        variant={isSelected ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => selecionarTamanho(index, tamanho)}
+                      >
+                        {tamanho}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {tamanhoAtual && (
+                <p style={{ marginTop: "12px", fontSize: "12px", color: "#28a745" }}>
+                  Selecionado: <strong>{tamanhoAtual}</strong>
+                </p>
+              )}
             </div>
 
-            {tamanhoAtual && (
-              <p style={{ marginTop: "12px", fontSize: "12px", color: "#28a745" }}>
-                Selecionado: <strong>{tamanhoAtual}</strong>
-              </p>
-            )}
+            {/* AÇÕES: ADICIONAR AO CARRINHO E COMPRAR AGORA */}
+            <div style={{ marginTop: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
+              {/* 2. Substituição pelo CartButton integrado ao contexto */}
+              <CartButton
+                produto={produto}
+                tamanhoSelecionado={tamanhoAtual}
+              />
+
+              {/* 3. Botão de compra direta com modal */}
+              <BuyButton disabled={!tamanhoAtual}>
+                Comprar Agora
+              </BuyButton>
+            </div>
           </div>
         );
       })}

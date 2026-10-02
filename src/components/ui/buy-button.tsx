@@ -14,7 +14,12 @@ import {
 } from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
 
-export function BuyButton() {
+// Permite receber todas as propriedades padrão do HTML button (disabled, onClick, children, etc.)
+export interface BuyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  children?: React.ReactNode
+}
+
+export function BuyButton({ children, disabled, onClick, ...props }: BuyButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   // Função disparada quando o usuário confirma a compra no modal
@@ -27,11 +32,26 @@ export function BuyButton() {
     })
   }
 
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Se foi passado um onClick customizado via prop, executa ele
+    if (onClick) {
+      onClick(e)
+    }
+    // Abre o modal de confirmação
+    setIsOpen(true)
+  }
+
   return (
     <>
-      {/* Botão principal que o usuário clica */}
-      <Button onClick={() => setIsOpen(true)} size="lg">
-        Comprar Agora
+      {/* Botão principal repassando o estado de disabled, texto dinâmico (children) e estilo */}
+      <Button 
+        onClick={handleClick} 
+        disabled={disabled} 
+        size="lg" 
+        className="w-full"
+        {...props}
+      >
+        {children || "Comprar Agora"}
       </Button>
 
       {/* Janela de Confirmação (Alert Dialog) */}
