@@ -63,7 +63,6 @@ export default function ListaProdutos() {
                   const isSelected = tamanhoAtual === tamanho;
 
                   return (
-                    // 2. Uso do Button do shadcn com variância dinâmica
                     <Button
                       key={tamanho}
                       variant={isSelected ? "default" : "outline"}

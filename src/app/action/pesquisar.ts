@@ -12,7 +12,7 @@ export async function buscarProdutos(termo: string) {
         },
       },
       orderBy: {
-        nome: 'asc', // Ordena os resultados alfabeticamente
+        nome: "asc", // Ordena os resultados alfabeticamente
       },
     });
     return produtos;
