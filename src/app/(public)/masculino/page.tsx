@@ -1,13 +1,20 @@
 "use client";
 
 import { BuyButton } from "@/components/ui/buy-button"; 
-import { CartButton } from "@/components/ui/cart-button"; // 1. Import do seu CartButton
+import { CartButton } from "@/components/ui/cart-button";
 import { Masculino } from "@/(produtos)/Masculino/index";
 import { size, Produto } from "@/lib/types";
 import { useState } from "react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export default function ListaProdutos() {
   const produtos = Masculino;
@@ -24,6 +31,7 @@ export default function ListaProdutos() {
     <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", padding: "20px" }}>
       {produtos.map((produto: Produto, index: number) => {
         const tamanhoAtual = tamanhosSelecionados[index];
+        const temVariasImagens = Array.isArray(produto.url) && produto.url.length > 1;
 
         return (
           <div
@@ -40,14 +48,35 @@ export default function ListaProdutos() {
             }}
           >
             <div>
+              {/* EXIBIÇÃO DA IMAGEM OU DO CARROSSEL */}
               <div style={{ position: "relative", width: "100%", height: "200px" }}>
-                <Image
-                  src={produto.url}
-                  alt={produto.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 250px"
-                  style={{ objectFit: "cover", borderRadius: "4px" }}
-                />
+                {temVariasImagens ? (
+                  <Carousel className="w-full h-full">
+                    <CarouselContent className="h-full ml-0">
+                      {produto.url.map((imgUrl: string, imgIdx: number) => (
+                        <CarouselItem key={imgIdx} className="pl-0 relative w-full h-[200px]">
+                          <Image
+                            src={imgUrl}
+                            alt={`${produto.name} - imagem${imgIdx + 1}`}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 250px"
+                            style={{ objectFit: "cover", borderRadius: "4px" }}
+                          />
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="left-1 h-7 w-7" />
+                    <CarouselNext className="right-1 h-7 w-7" />
+                  </Carousel>
+                ) : (
+                  <Image
+                    src={Array.isArray(produto.url) ? produto.url[0] : produto.url}
+                    alt={produto.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 250px"
+                    style={{ objectFit: "cover", borderRadius: "4px" }}
+                  />
+                )}
               </div>
 
               <h3 style={{ marginTop: "12px", marginBottom: "8px" }}>{produto.name}</h3>
@@ -91,13 +120,11 @@ export default function ListaProdutos() {
 
             {/* AÇÕES: ADICIONAR AO CARRINHO E COMPRAR AGORA */}
             <div style={{ marginTop: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
-              {/* 2. Substituição pelo CartButton integrado ao contexto */}
               <CartButton
                 produto={produto}
                 tamanhoSelecionado={tamanhoAtual}
               />
 
-              {/* 3. Botão de compra direta com modal */}
               <BuyButton disabled={!tamanhoAtual}>
                 Comprar Agora
               </BuyButton>

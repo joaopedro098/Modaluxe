@@ -13,5 +13,5 @@
   size: size[];
   description: string;
   value: number;
-  url : string
+  url: string[]
 }
