@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cart-context";
 import { Produto, size } from "@/lib/types";
 import { toast } from "sonner";
+import { ShoppingBag } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 interface CartButtonProps {
   produto: Produto;
@@ -12,25 +14,33 @@ interface CartButtonProps {
 
 export function CartButton({ produto, tamanhoSelecionado }: CartButtonProps) {
   const { addToCart } = useCart();
+  const { data: session } = authClient.useSession();
+  const userId = session?.user?.id;
 
   const handleAdd = () => {
+    if (!userId) {
+      toast.error("Por favor, faça login para adicionar itens ao carrinho!");
+      return;
+    }
+
     if (!tamanhoSelecionado) {
       toast.error("Por favor, selecione um tamanho!");
       return;
     }
 
     addToCart(produto, tamanhoSelecionado);
-    toast.success(`${produto.name} (${tamanhoSelecionado}) adicionado ao carrinho!`);
+
+    toast.success(`${produto.name} (${tamanhoSelecionado}) foi adicionado ao seu carrinho!`);
   };
 
   return (
     <Button
       variant="outline"
-      disabled={!tamanhoSelecionado}
       onClick={handleAdd}
-      className="w-full"
+      className="w-full gap-2 transition-all active:scale-95 font-medium"
     >
-      {tamanhoSelecionado ? "Adicionar ao Carrinho" : "Selecione um tamanho"}
+      <ShoppingBag className="w-4 h-4" />
+      Adicionar ao Carrinho
     </Button>
   );
 }

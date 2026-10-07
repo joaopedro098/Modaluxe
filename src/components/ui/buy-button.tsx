@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,50 +11,75 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { toast } from "sonner"
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
 
-// Permite receber todas as propriedades padrão do HTML button (disabled, onClick, children, etc.)
 export interface BuyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  children?: React.ReactNode
+  children?: React.ReactNode;
 }
 
 export function BuyButton({ children, disabled, onClick, ...props }: BuyButtonProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
-  // Função disparada quando o usuário confirma a compra no modal
+  // 1. Pega os dados brutos e o erro da sessão
+  const { data: session, isPending, error } = authClient.useSession();
+
+  // DEBUG no Console do Navegador (F12)
+  console.log("🔍 DEBUG BETTER AUTH:", {
+    session,
+    isPending,
+    error,
+    userId: session?.user?.id,
+  });
+
   const handleConfirmPurchase = () => {
-    setIsOpen(false)
-    
-    // Dispara a notificação no canto da tela
+    setIsOpen(false);
     toast.success("Compra realizada com sucesso!", {
       description: "Seu pedido foi processado e já está a caminho.",
-    })
-  }
+    });
+  };
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // Se foi passado um onClick customizado via prop, executa ele
+    // Interrompe qualquer envio de formulário padrão
+    e.preventDefault();
+
     if (onClick) {
-      onClick(e)
+      onClick(e);
     }
-    // Abre o modal de confirmação
-    setIsOpen(true)
-  }
+
+    if (isPending) {
+      toast.info("Aguarde, verificando autenticação...");
+      return;
+    }
+
+    // Se NÃO tiver o id do usuário no objeto da sessão
+    if (!session?.user?.id) {
+      console.warn("⚠️ Bloqueado: Usuário não autenticado.");
+      toast.error("Você precisa estar logado para realizar uma compra!", {
+        description: "Faça login para continuar.",
+      });
+      return; // Garante que NUNCA chegue no setIsOpen(true)
+    }
+
+    // Apenas se passou na validação acima
+    setIsOpen(true);
+  };
 
   return (
     <>
-      {/* Botão principal repassando o estado de disabled, texto dinâmico (children) e estilo */}
       <Button 
+        type="button"
         onClick={handleClick} 
-        disabled={disabled} 
+        disabled={disabled || isPending} 
         size="lg" 
         className="w-full"
         {...props}
       >
-        {children || "Comprar Agora"}
+        {isPending ? "Verificando..." : children || "Comprar Agora"}
       </Button>
 
-      {/* Janela de Confirmação (Alert Dialog) */}
+      {/* MODAL SÓ ABRE SE 'isOpen' FOR TRUE */}
       <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -72,5 +97,5 @@ export function BuyButton({ children, disabled, onClick, ...props }: BuyButtonPr
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }

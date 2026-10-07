@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useSyncExternalStore } from "react";
 import { Produto, size } from "@/lib/types";
+import { authClient } from "@/lib/auth-client";
 
 export interface CartItem {
   id: string | number;
@@ -9,7 +10,7 @@ export interface CartItem {
   price: number;
   size: size;
   quantity: number;
-  image: string;
+  image: string[];
 }
 
 interface CartContextType {
@@ -17,18 +18,68 @@ interface CartContextType {
   addToCart: (produto: Produto, tamanho: size) => void;
   removeFromCart: (id: string | number, size: size) => void;
   updateQuantity: (id: string | number, size: size, quantity: number) => void;
+  clearCart: () => void;
   totalQuantity: number;
   subtotal: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const emptySubscribe = () => () => {};
+
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { data: session } = authClient.useSession();
+  const userId = session?.user?.id;
+
+  // Checa se está no navegador sem causar hydration error
+  const isClient = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+
+  // Estado do carrinho
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
+  // Controla o id do usuário atual carregado
+  const [loadedUserId, setLoadedUserId] = useState<string | undefined>(undefined);
+
+  // Sincronização síncrona quando o usuário muda/desloga
+  if (userId !== loadedUserId) {
+    setLoadedUserId(userId);
+    if (typeof window !== "undefined" && userId) {
+      try {
+        const saved = localStorage.getItem(`cart_${userId}`);
+        setCartItems(saved ? JSON.parse(saved) : []);
+      } catch {
+        setCartItems([]);
+      }
+    } else {
+      // Se deslogou (userId é undefined), limpa a memória do carrinho
+      setCartItems([]);
+    }
+  }
+
+  // Persiste as alterações no localStorage quando o cartItems muda
+  useEffect(() => {
+    if (isClient && userId) {
+      localStorage.setItem(`cart_${userId}`, JSON.stringify(cartItems));
+    }
+  }, [cartItems, userId, isClient]);
+
   const addToCart = (produto: Produto, tamanho: size) => {
+    if (!userId) {
+      alert("Por favor, faça login para adicionar itens ao seu carrinho!");
+      return;
+    }
+
+    const formattedImages: string[] = Array.isArray(produto.url)
+      ? produto.url
+      : produto.url
+      ? [produto.url]
+      : [];
+
     setCartItems((prevItems) => {
-      // Verifica se o mesmo produto com o mesmo tamanho já está no carrinho
       const existingIndex = prevItems.findIndex(
         (item) => item.name === produto.name && item.size === tamanho
       );
@@ -47,7 +98,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           price: produto.value,
           size: tamanho,
           quantity: 1,
-          image: produto.url || "",
+          image: formattedImages,
         },
       ];
     });
@@ -69,6 +120,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  // Limpa o estado do carrinho e remove a chave do usuário no localStorage
+  const clearCart = () => {
+    setCartItems([]);
+    if (userId && typeof window !== "undefined") {
+      localStorage.removeItem(`cart_${userId}`);
+    }
+  };
+
   const totalQuantity = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
@@ -79,6 +138,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         addToCart,
         removeFromCart,
         updateQuantity,
+        clearCart,
         totalQuantity,
         subtotal,
       }}

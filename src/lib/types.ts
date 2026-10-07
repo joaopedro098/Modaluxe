@@ -15,3 +15,10 @@
   value: number;
   url: string[]
 }
+
+ export interface Acessorios{
+  name : string,
+  description : string
+  value : string
+  size? : number[]
+}

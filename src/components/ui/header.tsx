@@ -9,16 +9,41 @@ import {
   SheetDescription, 
   SheetFooter 
 } from "@/components/ui/sheet";
-import { ShoppingBag, Heart, Search, Menu, Trash2, Plus, Minus } from "lucide-react";
+import { ShoppingBag, Heart, Search, Menu, Trash2, Plus, Minus, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { useCart } from "@/context/cart-context";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function Header() {
-  const { cartItems, totalQuantity, subtotal, updateQuantity, removeFromCart } = useCart();
+  const { cartItems, totalQuantity, subtotal, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { data: session } = authClient.useSession();
+  const router = useRouter();
 
+ const handleSignOut = async () => {
+  try {
+    const { error } = await authClient.signOut();
+
+    if (error) {
+      toast.error(error.message || "Erro ao tentar sair.");
+      return;
+    }
+
+    // 1. Limpa o carrinho na memória e no localStorage
+    clearCart();
+
+    // 2. Feedback e redirecionamento
+    toast.success("Sessão encerrada com sucesso!");
+    router.push("/login");
+    router.refresh();
+  } catch {
+    toast.error("Ocorreu um erro ao sair.");
+  }
+};
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -34,7 +59,21 @@ export default function Header() {
             <Link href="/masculino" className="transition-colors hover:text-primary">Masculino</Link>
             <Link href="/colecao2026" className="transition-colors hover:text-primary">Coleção 2026</Link>
             <Link href="/acessorios" className="transition-colors hover:text-primary text-muted-foreground">Acessórios</Link>
-            <Link href="/login" className="transition-colors hover:text-primary text-muted-foreground">Login</Link>
+            
+            {/* Se o usuário estiver logado exibe o botão de Sair, caso contrário o link de Login */}
+            {session?.user ? (
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="flex items-center gap-1 transition-colors text-destructive hover:text-destructive/80"
+              >
+                <LogOut className="h-4 w-4" /> Sair
+              </button>
+            ) : (
+              <Link href="/login" className="transition-colors hover:text-primary text-muted-foreground">
+                Login
+              </Link>
+            )}
           </nav>
         </div>
 
@@ -67,53 +106,58 @@ export default function Header() {
               {/* Lista de Produtos do Carrinho */}
               <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-1">
                 {cartItems.length > 0 ? (
-                  cartItems.map((item) => (
-                    <div key={`${item.id}-${item.size}`} className="flex gap-4 items-center justify-between border-b pb-4">
-                      <div className="relative h-16 w-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                        {item.image ? (
-                          <Image src={item.image} alt={item.name} fill className="object-cover" />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">Sem foto</div>
-                        )}
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <h4 className="text-sm font-medium line-clamp-1">{item.name}</h4>
-                        <p className="text-xs text-muted-foreground">Tam: {item.size}</p>
-                        <div className="flex items-center gap-2 pt-1">
+                  cartItems.map((item) => {
+                    // Extrai a primeira imagem do array (string[])
+                    const imageUrl = Array.isArray(item.image) ? item.image[0] : item.image;
+
+                    return (
+                      <div key={`${item.id}-${item.size}`} className="flex gap-4 items-center justify-between border-b pb-4">
+                        <div className="relative h-16 w-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                          {imageUrl ? (
+                            <Image src={imageUrl} alt={item.name} fill className="object-cover" sizes="64px" />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">Sem foto</div>
+                          )}
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <h4 className="text-sm font-medium line-clamp-1">{item.name}</h4>
+                          <p className="text-xs text-muted-foreground">Tam: {item.size}</p>
+                          <div className="flex items-center gap-2 pt-1">
+                            <button
+                              type="button"
+                              onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}
+                              className="h-6 w-6 border rounded flex items-center justify-center text-xs hover:bg-muted"
+                            >
+                              <Minus className="h-3 w-3" />
+                            </button>
+                            <span className="text-xs font-medium">{item.quantity}</span>
+                            <button
+                              type="button"
+                              onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
+                              className="h-6 w-6 border rounded flex items-center justify-center text-xs hover:bg-muted"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="text-right space-y-1">
+                          <span className="text-sm font-bold">
+                            {new Intl.NumberFormat("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                            }).format(item.price * item.quantity)}
+                          </span>
                           <button
                             type="button"
-                            onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}
-                            className="h-6 w-6 border rounded flex items-center justify-center text-xs hover:bg-muted"
+                            onClick={() => removeFromCart(item.id, item.size)}
+                            className="block ml-auto text-muted-foreground hover:text-destructive transition-colors"
                           >
-                            <Minus className="h-3 w-3" />
-                          </button>
-                          <span className="text-xs font-medium">{item.quantity}</span>
-                          <button
-                            type="button"
-                            onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
-                            className="h-6 w-6 border rounded flex items-center justify-center text-xs hover:bg-muted"
-                          >
-                            <Plus className="h-3 w-3" />
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
                       </div>
-                      <div className="text-right space-y-1">
-                        <span className="text-sm font-bold">
-                          {new Intl.NumberFormat("pt-BR", {
-                            style: "currency",
-                            currency: "BRL",
-                          }).format(item.price * item.quantity)}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => removeFromCart(item.id, item.size)}
-                          className="block ml-auto text-muted-foreground hover:text-destructive transition-colors"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground space-y-2">
                     <ShoppingBag className="h-10 w-10 stroke-1" />
@@ -122,7 +166,7 @@ export default function Header() {
                 )}
               </div>
 
-              {/* Rodapé do Carrinho com Subtotal e Checkout */}
+              {/* Rodapé do Carrinho */}
               {cartItems.length > 0 && (
                 <SheetFooter className="flex-col sm:flex-col border-t pt-4 space-y-3">
                   <div className="w-full space-y-1.5 text-sm">
